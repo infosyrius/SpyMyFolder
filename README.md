@@ -3,7 +3,7 @@ This script check if a file was modified since the last time, by a hash of each 
 
 Ther is an example of use : 
 
-Syntaxe :  ./testmd5.sh -s /Dossier/a/tester/ -d /Destination/des/hashs/md5/ [-e /Dossier/exclu] [-v] [-f] [-p [md5/sha1/sha256/sha512]]
+	Syntaxe :  ./testmd5.sh -s /Dossier/a/tester/ -d /Destination/des/hashs/md5/ [-e /Dossier/exclu] [-v] [-f] [-p [md5/sha1/sha256/sha512]]
 
 
 	-s : Source folder to control
