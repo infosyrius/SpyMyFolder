@@ -1,16 +1,16 @@
 # SpyMyFolder
 This script check if a file was modified since the last time, by a hash of each file inside a folder (MD5 by default, but you can choose SHA1, SHA256 or SHA512).
 
-Ther is an example of use : 
+There is an example of use : 
 
-	Syntaxe :  ./testmd5.sh -s /Dossier/a/tester/ -d /Destination/des/hashs/md5/ [-e /Dossier/exclu] [-v] [-f] [-p [md5/sha1/sha256/sha512]]
+	Syntaxe :  ./testmd5.sh -s /folder/to/test/ -d /folder/for/hash/results/ [-e /exclude/folder] [-v] [-f] [-p [md5/sha1/sha256/sha512]]
 
 
 	-s : Source folder to control
     
-	-d : Destination folder for the hash results
+	-d : Destination folder for hashs results
  	  
-	-e : Exclude a folder
+	-e : Exclude a folder in the source
 	  
 	-v : Verbose mode
 		
