@@ -25,7 +25,7 @@ Example of use (From --help command):
 
 	./spymyfolder.sh -s /etc/ -d /var/log/spymyfolder/ -e /etc/network/ -p sha256 -m john@doe.com
 	
-	Warning : Remember to use with sudo if you haven't root access to some folders !
+	Warning : Remember to check for correct permissions on working directory !
 
 
 This script is not finished yet.
