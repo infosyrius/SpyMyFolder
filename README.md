@@ -37,18 +37,27 @@ Ce script permet de vérifier si un fichier a été modifié depuis la dernière
 Voici un exemple d'utilisation (Issue de la commande --help) :
 
 	Syntaxe : ./spymyfolder.sh -s /Dossier/a/tester/ -d /Destination/des/hashs/md5/ [-e /Dossier/exclu] [-v] [-f] [-p [md5/sha1/sha256/sha512]] [-m john@doe.com]
-	         -s : Dossier source à controler
- 	         -d : Dossier destination pour la copie des hashs
-	         -e : Désigne un repertoire à exclure
-		 -v : Mode verbose
-		 -p : Protocole pour la vérification à utiliser. Au choix : md5, sha1, sha256, ou sha512
-		 -f : Mode force. Pas de demande de confirmation pour le remplacement des hashs existants
-		 -m : Mail : Utilise la commande "mail" pour envoyer un rapport. Utile en utilisation automatisé. Assurez-vous d'avoir un "mutt" fonctionnel !
 
-Exemple : ./spymyfolder.sh -v -f -s /etc/ -d /var/log/md5/
-          ./spymyfolder.sh -s /etc/ -d /var/log/md5/ -e /etc/network/ -p sha256 -m john@doe.com
+	-s : Dossier source à controler
 
-/!\ ATTENTION /!\ : Pensez à utiliser la commande "sudo" dans les dossiers ou vous n'avez pas les droits root ! Depends de la commande "mutt" pour l'envoi de mail !
+	-d : Dossier destination pour la copie des hashs
+
+	-e : Désigne un repertoire à exclure
+
+	-v : Mode verbose
+
+	-p : Protocole pour la vérification à utiliser. Au choix : md5, sha1, sha256, ou sha512
+
+	-f : Mode force. Pas de demande de confirmation pour le remplacement des hashs existants
+
+	-m : Mail : Utilise la commande "mail" pour envoyer un rapport. Utile en utilisation automatisé. Assurez-vous d'avoir un "mutt" fonctionnel !
+
+	Exemple : ./spymyfolder.sh -v -f -s /etc/ -d /var/log/md5/
+
+	./spymyfolder.sh -s /etc/ -d /var/log/md5/ -e /etc/network/ -p sha256 -m john@doe.com
+
+	/!\ ATTENTION /!\ : Pensez à utiliser la commande "sudo" dans les dossiers ou vous n'avez pas les droits root ! Depends de la commande "mutt" pour l'envoi de mail !
+
 
 Ce script n'est pas fini pour le moment. Reste à faire :
 
