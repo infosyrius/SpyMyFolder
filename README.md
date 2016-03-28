@@ -1,10 +1,10 @@
 # SpyMyFolder
 
-This script check if a file was modified since the last time, by a hash of each file inside a folder (MD5 by default, but you can choose SHA1, SHA256 or SHA512).
+This script check if a file was modified since the last time, with a hash of each file inside a folder (MD5 by default, but you can choose SHA1, SHA256 or SHA512).
 
-There is an example of use (From --help command): 
+Example of use (From --help command): 
 
-	Syntaxe :  ./testmd5.sh -s /folder/to/test/ -d /folder/for/hash/results/ [-e /exclude/folder] [-v] [-f] [-p [md5/sha1/sha256/sha512]]
+	Synthax :  ./testmd5.sh -s /folder/to/test/ -d /folder/for/hash/results/ [-e /exclude/folder] [-v] [-f] [-p [md5/sha1/sha256/sha512]]
 
 
 	-s : Source folder to control
@@ -17,18 +17,18 @@ There is an example of use (From --help command):
 		
 	-p : Choose hash algorithm : md5 sha1 sha256 sha512. default is md5
 		
-	-f : No ask for replacement hash's result
+	-f : Force : no ask for replacement hash's result
 	
-	-m : Send a mail. Warning : This script use mutt because mailx dosen't accept attachement
+	-m : Send a mail. Warning : This script use mutt because mailx doesn't accept attachment
 	
-	Exemple : ./testmd5.sh -v -f -s /etc/ -d /var/log/spymyfolder/
+	Example : ./spymyfolder.sh -v -f -s /etc/ -d /var/log/spymyfolder/
 
-	./testmd5.sh -s /etc/ -d /var/log/spymyfolder/ -e /etc/network/ -p sha256 -m john@doe.com
+	./spymyfolder.sh -s /etc/ -d /var/log/spymyfolder/ -e /etc/network/ -p sha256 -m john@doe.com
 	
-	Warning : Remember to use the sudo command if you haven't root access from some folders !
+	Warning : Remember to use with sudo if you haven't root access to some folders !
 
 
-This script is not finished at this time.
+This script is not finished yet.
 
 #SpyMyFolder
 
