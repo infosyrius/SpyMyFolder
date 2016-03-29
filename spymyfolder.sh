@@ -27,13 +27,11 @@ obligatoire="0"
 verbose="0"
 force="0"
 mail="0"
-sujet=""
 email=""
-corps=""
 sujetok="[SUCCESS] : SpyMyFolder - Recapitulatif mail du $(date +%d/%m/%Y) à $(date +%R)"
 sujetcritical="[CRITICAL] : SpyMyFolder - Recapitulatif mail du $(date +%d/%m/%Y) à $(date +%R)"
-corpsok=$(echo -e "Bonjour,\n\nR.A.S, tout est en ordre chef.") 
-corpscritical=$(echo -e "Bonjour,\n\nVous avez des erreurs. Vérifier en pièce jointe ce qui a été modifié.")
+corpsok="Bonjour,\n\nR.A.S, tout est en ordre chef."
+corpscritical="Bonjour,\n\nVous avez des erreurs. Voici ci dessous les fichiers qui ont été modifiés :\n\n\n"
 #Valeur du séparateur par défaut
 IFS=$'\n'
 
@@ -50,12 +48,12 @@ function help()
 	echo "		 -v : Mode verbose"
 	echo "		 -p : Protocole pour la vérification à utiliser. Au choix : md5, sha1, sha256, ou sha512"
 	echo "		 -f : Mode force. Pas de demande de confirmation pour le remplacement des hashs existants"
-	echo "		 -m : Mail : Utilise la commande \"mail\" pour envoyer un rapport. Utile en utilisation automatisé. Assurez-vous d'avoir un \"mutt\" fonctionnel !"
+	echo "		 -m : Mail : Utilise la commande \"mail\" pour envoyer un rapport. Utile en utilisation automatisé. Assurez-vous d'avoir un \"postfix\" fonctionnel !"
 	echo ""
         echo "Exemple : $0 -v -f -s /etc/ -d /var/log/md5/"
 	echo "          $0 -s /etc/ -d /var/log/md5/ -e /etc/network/ -p sha256 -m john@doe.com"
 	echo ""
-	echo "/!\\ ATTENTION /!\\ : Pensez à utiliser la commande \"sudo\" dans les dossiers ou vous n'avez pas les droits root ! Depends de la commande \"mutt\" pour l'envoi de mail !"
+	echo "/!\\ ATTENTION /!\\ : Dépends de la commande \"mail\" pour l'envoi de mail !"
 	echo ""
 	exit
 }
@@ -228,8 +226,10 @@ if [ -e ${destination}${nomtotalmd5precedent} ]; then
 			replace=""
 			echo "/!\ FICHIERS DIFFERENTS /!\ "
 			diff ${destination}${nomfichiersmd5precedent} ${destination}${nomfichiersmd5}
-			#On enregistre le résultat dans un fichier, pour l'envoi par mail
-			diff ${destination}${nomfichiersmd5precedent} ${destination}${nomfichiersmd5} > ${destination}"rapport.html"
+			#On enregistre le résultat dans un fichier, pour l'envoi du mail, avec le corps
+			echo -e $corpscritical > ${destination}"rapport.txt"
+			echo -e "Synthèse ci-dessous (le \"<\" signifie fichier non présent, le \">\" signifie fichier en plus) :\n\n" >> ${destination}"rapport.txt"
+			diff ${destination}${nomfichiersmd5precedent} ${destination}${nomfichiersmd5} >> ${destination}"rapport.txt"
 			#Test si le mode force est activée pour bypasser la demande
 			if [ $force -eq 1 ]; then
 				echo "Utilisation du mode force. Remplacement en cours..."
@@ -264,9 +264,11 @@ fi
 if [ "$mail" == "1" ]; then
 	#Si pas de modification depuis la derniere fois, on envoie un success dans le sujet du mail, sinon un rapport
 	if  [ "$resultat" == "0" ]; then
-		echo $corpsok | mutt -x -s $sujetok -- $email
+		echo -e $corpsok | mail -s $sujetok -a "Content-Type: text/plain; charset=ISO-8859-15" $email
 	else
-		echo $corps | mutt -x -a ${destination}"rapport.html" -s $sujet -- $email
+		cat ${destination}"rapport.txt" | mail -s $sujetcritical -a "Content-Type: text/plain; charset=ISO-8859-15" $email
+		#On supprime le rapport
+		rm ${destination}"rapport.txt"
 	fi
 	echo "Un mail a bien été envoyé à "$email "."
 fi
