@@ -11,7 +11,7 @@ Example of use (From --help command):
     
 	-d : Destination folder for hashs results
  	  
-	-e : Exclude a folder in the source
+	-e : Exclude folders or a files in the source. 
 	  
 	-v : Verbose mode
 		
@@ -23,12 +23,10 @@ Example of use (From --help command):
 	
 	Example : ./spymyfolder.sh -v -f -s /etc/ -d /var/log/spymyfolder/
 
-	./spymyfolder.sh -s /etc/ -d /var/log/spymyfolder/ -e /etc/network/ -p sha256 -m john@doe.com
+	./spymyfolder.sh -s /etc/ -d /var/log/spymyfolder/ -e /etc/network/ /etc/apt/ /etc/passwd -p sha256 -m john@doe.com
 	
 	Warning : If you want to send mail, please check if postfix is ok
 
-
-This script is not finished yet.
 
 #SpyMyFolder
 
@@ -42,7 +40,7 @@ Voici un exemple d'utilisation (Issue de la commande --help) :
 
 	-d : Dossier destination pour la copie des hashs
 
-	-e : Désigne un repertoire à exclure
+	-e : Désigne le(s) repertoire(s) ou fichier(s) à exclure
 
 	-v : Mode verbose
 
@@ -52,15 +50,13 @@ Voici un exemple d'utilisation (Issue de la commande --help) :
 
 	-m : Mail : Utilise la commande "mail" pour envoyer un rapport. Utile en utilisation automatisé. Assurez-vous d'avoir un postfix fonctionnel !
 
-	Exemple : ./spymyfolder.sh -v -f -s /etc/ -d /var/log/md5/
+	Exemple : ./spymyfolder.sh -v -f -s /etc/ -d /var/log/spymyfolder/
 
-	./spymyfolder.sh -s /etc/ -d /var/log/md5/ -e /etc/network/ -p sha256 -m john@doe.com
+	./spymyfolder.sh -s /etc/ -d /var/log/spymyfolder/ -e /etc/network/ /etc/apt/ /etc/passwd -p sha256 -m john@doe.com
 
 	/!\ ATTENTION /!\ : Assurez-vous d'avoir un postfix foncionnel !
 
 
 Ce script n'est pas fini pour le moment. Reste à faire :
 
-	- Prise en compte de plusieurs exclusions
 	- Création d'un .deb pour une meilleure intégration
-	- Encodage ASCII

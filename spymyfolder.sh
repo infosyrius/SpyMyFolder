@@ -5,10 +5,6 @@
 # Utilisé dans le but de surveiller un site #
 #    web, ou alors un système de fichiers   #
 #############################################
-#		    V2.1		    #
-#############################################
-#		 29/03/2016		    #
-#############################################
 #
 ## Se connecter en ssh sur une machine :
 ## ssh login@machineDistante bash < script.sh 	# Permet d'executer une commande locale
@@ -22,6 +18,7 @@ nomtotalmd5="checksum_total.txt"
 nomtotalmd5precedent="checksum_total_precedent.txt"
 replace="?"
 exclusion=""
+maxexclu="0"
 commande="md5sum"
 obligatoire="0"
 verbose="0"
@@ -31,7 +28,7 @@ email=""
 sujetok="[SUCCESS] : SpyMyFolder - Recapitulatif mail du $(date +%d/%m/%Y) à $(date +%R)"
 sujetcritical="[CRITICAL] : SpyMyFolder - Recapitulatif mail du $(date +%d/%m/%Y) à $(date +%R)"
 corpsok="Bonjour,\n\nR.A.S, tout est en ordre chef."
-corpscritical="Bonjour,\n\nVous avez des erreurs. Voici ci dessous les fichiers qui ont été modifiés :\n\n\n"
+corpscritical="Bonjour,\n\nVous avez des modifications.\n\n\nSynthèse ci-dessous (le \"<\" signifie fichier non présent, le \">\" signifie fichier en plus) :\n\n"
 #Valeur du séparateur par défaut
 IFS=$'\n'
 
@@ -44,14 +41,14 @@ function help()
         echo "Syntaxe : $0 -s /Dossier/a/tester/ -d /Destination/des/hashs/md5/ [-e /Dossier/exclu] [-v] [-f] [-p [md5/sha1/sha256/sha512]] [-m john@doe.com]"
         echo "	         -s : Dossier source à controler"
         echo " 	         -d : Dossier destination pour la copie des hashs"
-	echo "	         -e : Désigne un repertoire à exclure"
+	echo "	         -e : Désigne le(s) repertoire(s) ou fichier(s) à exclure. "
 	echo "		 -v : Mode verbose"
 	echo "		 -p : Protocole pour la vérification à utiliser. Au choix : md5, sha1, sha256, ou sha512"
 	echo "		 -f : Mode force. Pas de demande de confirmation pour le remplacement des hashs existants"
-	echo "		 -m : Mail : Utilise la commande \"mail\" pour envoyer un rapport. Utile en utilisation automatisé. Assurez-vous d'avoir un \"postfix\" fonctionnel !"
+	echo "		 -m : Mail : Utilise la commande \"mail\" pour envoyer un rapport. Utile en crontab. Assurez-vous d'avoir un \"postfix\" fonctionnel !"
 	echo ""
-        echo "Exemple : $0 -v -f -s /etc/ -d /var/log/md5/"
-	echo "          $0 -s /etc/ -d /var/log/md5/ -e /etc/network/ -p sha256 -m john@doe.com"
+        echo "Exemple : $0 -v -f -s /etc/ -d /var/log/spymyfolder/"
+	echo "          $0 -s /etc/ -d /var/log/spymyfolder/ -e /etc/network/ /etc/apt/ /etc/passwd -p sha256 -m john.doe@business.com"
 	echo ""
 	echo "/!\\ ATTENTION /!\\ : Dépends de la commande \"mail\" pour l'envoi de mail !"
 	echo ""
@@ -71,6 +68,7 @@ if [ "$1" == "--help" ]; then
 	help
 fi
 
+#Traitement des paramètres passés au script
 until [ "$*" = "" ]; do
 	case "$1" in
 	#Test source
@@ -117,19 +115,33 @@ until [ "$*" = "" ]; do
                 if [ "$exclusion" != "" ] ; then
                         error
                 fi
+		#Boucle pour savoir si plusieurs exclusions ont été définies à la suite
+		until [ "$*" = "" ]; do
+			#On teste si l'argument suivant est valide
+			if [[ "$2" == -* || "$2" == "" ]]; then
+				break
+			fi
+			#Test dossier ou fichier existant réélement
+                	if [ ! -d "$2" -a ! -f "$2" ]; then
+                        	echo "Exclusion invalide. Vérifier que le chemin \"$2\" existe !"
+                        	exit
+                	fi
+			#Test pour savoir si l'exclusion fait bien parti de la source
+			if ! [[ "$2" =~ "$source".+ ]]; then
+               			echo "Le dossier exclusion \"$2\"n'est pas compatible avec la source !"
+        	        	exit
+	                fi
+			#On teste si c'est la premiere fois
+			if [[ "$exclusion" == "" ]]; then
+				exclusion="$2"
+			else
+				exclusion="$exclusion$IFS$2"
+				dernierexclu="$2"
+			fi
+			#On incrémente le compteur maxexclu
+			maxexclu=$((maxexclu+1))
 		shift
-		#Test dossier exclusion
-                if [ ! -d "$1" ]; then
-                        echo "Dossier d'exclusion invalide."
-                        exit
-                fi
-                scount=$(echo -n $source | wc -c)
-                ecount=$(echo -n $1 | wc -c)
-                if  [[ "$1" != "$source"* ]] || [ "$scount" -ge "$ecount" ]; then
-                        echo "Le dossier exclusion n'est pas compatible avec la source !"
-                        exit
-                fi
-		exclusion="$1"
+		done
 	;;
 	#Test verbose
 	-v)
@@ -188,27 +200,42 @@ fi
 #									#
 #########################################################################
 
-#Suppression du fichier md5 de la précédente utilisation si existant
+#Suppression du fichier hash de la précédente utilisation si existant
 if [ -e ${destination}${nomfichiersmd5} ]; then
 	rm -f ${destination}${nomfichiersmd5}
 fi
 touch ${destination}${nomfichiersmd5}
+#Si il est impossible de créer le fichier des hashs
+if [ "$?" == 1 ]; then
+	echo "Impossible de créer le fichier listant les hashs. Assurez-vous d'avoir les droits sur le dossier $destination et réessayer."
+	exit
+fi
 
-#md5sum de tous les fichiers dans un seul fichier texte
+
+#Hash de tous les fichiers présents dans la source dans un seul fichier texte
 for fichier in $(find $source); do
-	#Gestion du mode verbose
-	if [ "$verbose" == "1" ]; then
-		echo "$fichier"
-	fi
-	if [ -f $fichier ] && [[ $fichier != "$exclusion"* ]] && [ ! -d "$fichier" ]; then
-		${commande} "$fichier" >> ${destination}${nomfichiersmd5}
-	fi
+	#On défini le compteur exclusion à 0
+	compteur=0
+	#On teste les exclusions un par un
+	for exclu in $exclusion; do
+		if [ -f $fichier ] && [[ $fichier != "$exclu"* ]]; then
+			compteur=$((compteur+1))
+		fi
+	done
+	#On valide le traitement suivant les deux conditions
+        if [[ "$exclu" == "$dernierexclu" ]] && [[ "$compteur" == "$maxexclu" ]]; then 
+        	#Gestion du mode verbose
+                if [ "$verbose" == "1" ]; then
+                	echo "Traitement de $fichier"
+                fi
+                ${commande} "$fichier" >> ${destination}${nomfichiersmd5}
+        fi
 done
 
 echo "Le fichier 'md5fichiers' listant tous les fichiers a bien été créé !"
 
 if [ -e ${destination}${nomtotalmd5} ]; then
-	rm ${destination}${nomtotalmd5}
+	rm -f ${destination}${nomtotalmd5}
 fi
 
 touch ${destination}${nomtotalmd5}
@@ -227,8 +254,8 @@ if [ -e ${destination}${nomtotalmd5precedent} ]; then
 			echo "/!\ FICHIERS DIFFERENTS /!\ "
 			diff ${destination}${nomfichiersmd5precedent} ${destination}${nomfichiersmd5}
 			#On enregistre le résultat dans un fichier, pour l'envoi du mail, avec le corps
+			touch ${destination}"rapport.txt"
 			echo -e $corpscritical > ${destination}"rapport.txt"
-			echo -e "Synthèse ci-dessous (le \"<\" signifie fichier non présent, le \">\" signifie fichier en plus) :\n\n" >> ${destination}"rapport.txt"
 			diff ${destination}${nomfichiersmd5precedent} ${destination}${nomfichiersmd5} >> ${destination}"rapport.txt"
 			#Test si le mode force est activée pour bypasser la demande
 			if [ $force -eq 1 ]; then
@@ -251,7 +278,7 @@ if [ -e ${destination}${nomtotalmd5precedent} ]; then
 			fi
 		done
 	else
-		#Mail etat impossible
+		#Etat impossible
 		echo "Impossible d'accéder aux fichiers. Vérifiez les droits"
 	fi
 else
@@ -264,12 +291,12 @@ fi
 if [ "$mail" == "1" ]; then
 	#Si pas de modification depuis la derniere fois, on envoie un success dans le sujet du mail, sinon un rapport
 	if  [ "$resultat" == "0" ]; then
-		echo -e $corpsok | mail -s $sujetok -a "Content-Type: text/plain; charset=ISO-8859-15" $email
+		echo -e $corpsok | mail -s $sujetok -a "Content-Type: text/plain; charset=UTF-8" $email
 	else
-		cat ${destination}"rapport.txt" | mail -s $sujetcritical -a "Content-Type: text/plain; charset=ISO-8859-15" $email
+		cat ${destination}"rapport.txt" | mail -s $sujetcritical -a "Content-Type: text/plain; charset=UTF-8" $email
 		#On supprime le rapport
-		rm ${destination}"rapport.txt"
+		rm -f ${destination}"rapport.txt"
 	fi
-	echo "Un mail a bien été envoyé à "$email "."
+	echo "Un mail a bien été envoyé à" $email "."
 fi
-echo "Fin du programme."
+echo "Fin du script."
