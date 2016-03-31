@@ -57,6 +57,4 @@ Voici un exemple d'utilisation (Issue de la commande --help) :
 	/!\ ATTENTION /!\ : Assurez-vous d'avoir un postfix foncionnel !
 
 
-Ce script n'est pas fini pour le moment. Reste à faire :
-
-	- Création d'un .deb pour une meilleure intégration
+Ce script n'est pas fini pour le moment.
