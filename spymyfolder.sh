@@ -85,7 +85,7 @@ until [ "$*" = "" ]; do
 			exit
         fi
 		#Rajout d'un / si non présent
-		if [[ $1 != */ ]] ; then 
+		if [[ $1 != */ ]] ; then
 			source="$1""/"
 		else
 			source="$1"
@@ -104,7 +104,7 @@ until [ "$*" = "" ]; do
 				exit
 		fi
 		#Rajout d'un / si non présent
-		if [[ $1 != */ ]] ; then 
+		if [[ $1 != */ ]] ; then
 			destination="$1""/"
 		else
 			destination="$1"
@@ -230,7 +230,7 @@ for fichier in $(find $source); do
 		fi
 	done
 	#On valide le traitement suivant les deux conditions
-        if [[ "$exclu" == "$dernierexclu" ]] && [[ "$compteur" == "$maxexclu" ]]; then 
+        if [[ "$exclu" == "$dernierexclu" ]] && [[ "$compteur" == "$maxexclu" ]] && [ -f $fichier ]; then
         	#Gestion du mode verbose
 			if [ "$verbose" == "1" ]; then
 				echo "Traitement de $fichier"
